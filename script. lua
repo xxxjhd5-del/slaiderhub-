@@ -1,68 +1,216 @@
 local plrs = game:GetService("Players")
+local ts_ = game:GetService("TweenService")
+local sound_ = game:GetService("SoundService")
+local debris_ = game:GetService("Debris")
 local me = plrs.LocalPlayer
-local on = false
+local walkOn = false
+local escOn = false
+
+local MAIN_ID = "127991047615497"
+local TOGGLE_ID = "117454871157451"
+local INTRO_ID = MAIN_ID
+local INTRO_TEXT = "DSTORxTOP1"
+local CLICK_ID = "0"
+
+local IMG_W, IMG_H = 736, 756
+local W = 300
+local H = math.floor(W * IMG_H / IMG_W + 0.5)
 
 local red = Color3.fromRGB(200, 50, 50)
 local green = Color3.fromRGB(50, 200, 90)
-local darkRed = Color3.fromRGB(120, 0, 0)
 
-local sg = Instance.new("ScreenGui")
-sg.Name = "bombwalk"
-sg.ResetOnSpawn = false
-if not pcall(function() sg.Parent = (gethui and gethui()) or game:GetService("CoreGui") end) or not sg.Parent then
-    sg.Parent = me:WaitForChild("PlayerGui")
+local function newGui(name)
+    local g = Instance.new("ScreenGui")
+    g.Name = name
+    g.ResetOnSpawn = false
+    if not pcall(function() g.Parent = (gethui and gethui()) or game:GetService("CoreGui") end) or not g.Parent then
+        g.Parent = me:WaitForChild("PlayerGui")
+    end
+    return g
+end
+
+local sg = newGui("bombwalk")
+
+local function setImage(label, id)
+    label.Image = "rbxthumb://type=Asset&id=" .. id .. "&w=420&h=420"
+    task.spawn(function()
+        task.wait(4)
+        if not label.IsLoaded then
+            label.Image = "rbxassetid://" .. id
+        end
+    end)
+end
+
+local function click()
+    if CLICK_ID == "0" then return end
+    pcall(function()
+        local s = Instance.new("Sound")
+        s.SoundId = "rbxassetid://" .. CLICK_ID
+        s.Volume = 1
+        s.PlaybackSpeed = 0.95 + math.random() * 0.15
+        s.Parent = sound_
+        s:Play()
+        debris_:AddItem(s, 2)
+    end)
 end
 
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 220, 0, 285)
-main.Position = UDim2.new(0.5, -110, 0.1, 0)
-main.BackgroundColor3 = Color3.new(1, 1, 1)
+main.Size = UDim2.new(0, W, 0, H)
+main.Position = UDim2.new(0.5, -W / 2, 0.1, 0)
+main.BackgroundColor3 = Color3.new(0, 0, 0)
 main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
-Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
-
-local title = Instance.new("TextLabel", main)
-title.Size = UDim2.new(1, 0, 0, 24)
-title.Position = UDim2.new(0, 0, 0, 8)
-title.BackgroundTransparency = 1
-title.Text = "DSTORxTOP1"
-title.TextColor3 = darkRed
-title.Font = Enum.Font.GothamBlack
-title.TextSize = 18
+main.Visible = false
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 
 local pic = Instance.new("ImageLabel", main)
-pic.Size = UDim2.new(0, 190, 0, 190)
-pic.Position = UDim2.new(0.5, -95, 0, 38)
-pic.BackgroundColor3 = Color3.new(0, 0, 0)
+pic.Size = UDim2.new(1, 0, 1, 0)
+pic.BackgroundTransparency = 1
 pic.BorderSizePixel = 0
-pic.Image = "rbxassetid://131920968752633"
-pic.ScaleType = Enum.ScaleType.Crop
-Instance.new("UICorner", pic).CornerRadius = UDim.new(0, 10)
+pic.ScaleType = Enum.ScaleType.Stretch
+pic.ZIndex = 1
+Instance.new("UICorner", pic).CornerRadius = UDim.new(0, 12)
+setImage(pic, MAIN_ID)
 
-local b = Instance.new("TextButton", main)
-b.Size = UDim2.new(1, -24, 0, 34)
-b.Position = UDim2.new(0, 12, 1, -46)
-b.BackgroundColor3 = red
-b.BorderSizePixel = 0
-b.TextColor3 = Color3.new(1, 1, 1)
-b.Font = Enum.Font.GothamBold
-b.TextSize = 16
-b.Text = "Walk: OFF"
-Instance.new("UICorner", b).CornerRadius = UDim.new(0, 10)
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, 0, 0, 28)
+title.Position = UDim2.new(0, 0, 0, 6)
+title.BackgroundTransparency = 1
+title.Text = "DSTORxTOP1"
+title.TextColor3 = Color3.fromRGB(230, 30, 30)
+title.Font = Enum.Font.GothamBlack
+title.TextSize = 20
+title.ZIndex = 2
+local ts = Instance.new("UIStroke", title)
+ts.Color = Color3.new(0, 0, 0)
+ts.Thickness = 2
 
-b.MouseButton1Click:Connect(function()
-    on = not on
-    b.Text = on and "Walk: ON" or "Walk: OFF"
-    b.BackgroundColor3 = on and green or red
+local function makeBtn(text, xScale, xOff)
+    local b = Instance.new("TextButton", main)
+    b.Size = UDim2.new(0.5, -18, 0, 36)
+    b.Position = UDim2.new(xScale, xOff, 1, -46)
+    b.BackgroundColor3 = red
+    b.BackgroundTransparency = 0.15
+    b.BorderSizePixel = 0
+    b.TextColor3 = Color3.new(1, 1, 1)
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 15
+    b.Text = text .. ": OFF"
+    b.ZIndex = 2
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 10)
+    return b
+end
+
+local walkBtn = makeBtn("Walk", 0, 12)
+local escBtn = makeBtn("Escape", 0.5, 6)
+
+walkBtn.MouseButton1Click:Connect(function()
+    walkOn = not walkOn
+    walkBtn.Text = walkOn and "Walk: ON" or "Walk: OFF"
+    walkBtn.BackgroundColor3 = walkOn and green or red
 end)
 
-local function bomb()
-    local c = me.Character
-    if not c then return end
-    for _, t in pairs(c:GetChildren()) do
+escBtn.MouseButton1Click:Connect(function()
+    escOn = not escOn
+    escBtn.Text = escOn and "Escape: ON" or "Escape: OFF"
+    escBtn.BackgroundColor3 = escOn and green or red
+end)
+
+local tog = Instance.new("ImageButton", sg)
+tog.Size = UDim2.new(0, 56, 0, 56)
+tog.Position = UDim2.new(0, 14, 0.5, -28)
+tog.BackgroundColor3 = Color3.new(0, 0, 0)
+tog.BorderSizePixel = 0
+tog.Active = true
+tog.Draggable = true
+tog.ScaleType = Enum.ScaleType.Stretch
+tog.ZIndex = 5
+tog.Visible = false
+Instance.new("UICorner", tog).CornerRadius = UDim.new(0, 14)
+local tstroke = Instance.new("UIStroke", tog)
+tstroke.Color = Color3.fromRGB(200, 30, 30)
+tstroke.Thickness = 2
+setImage(tog, TOGGLE_ID)
+
+local downPos
+tog.MouseButton1Down:Connect(function()
+    downPos = tog.AbsolutePosition
+end)
+tog.MouseButton1Click:Connect(function()
+    if downPos and (tog.AbsolutePosition - downPos).Magnitude > 6 then
+        return
+    end
+    main.Visible = not main.Visible
+end)
+
+task.spawn(function()
+    local ig = newGui("bombwalk_intro")
+    ig.IgnoreGuiInset = true
+
+    local bg = Instance.new("Frame", ig)
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.BackgroundColor3 = Color3.new(0, 0, 0)
+    bg.BorderSizePixel = 0
+    bg.Active = true
+
+    local img = Instance.new("ImageLabel", bg)
+    img.Size = UDim2.new(0, 180, 0, 180)
+    img.Position = UDim2.new(0.5, -90, 0.5, -150)
+    img.BackgroundTransparency = 1
+    img.ScaleType = Enum.ScaleType.Fit
+    img.ImageTransparency = 1
+    setImage(img, INTRO_ID)
+
+    local txt = Instance.new("TextLabel", bg)
+    txt.Size = UDim2.new(1, 0, 0, 50)
+    txt.Position = UDim2.new(0, 0, 0.5, 50)
+    txt.BackgroundTransparency = 1
+    txt.Text = ""
+    txt.TextColor3 = Color3.fromRGB(230, 30, 30)
+    txt.Font = Enum.Font.GothamBlack
+    txt.TextSize = 36
+
+    ts_:Create(img, TweenInfo.new(0.7), {ImageTransparency = 0}):Play()
+    task.wait(0.9)
+
+    for i = 1, #INTRO_TEXT do
+        txt.Text = INTRO_TEXT:sub(1, i)
+        if INTRO_TEXT:sub(i, i) ~= " " then
+            click()
+        end
+        task.wait(0.13)
+    end
+    task.wait(1.2)
+
+    local fade = TweenInfo.new(0.7)
+    ts_:Create(img, fade, {ImageTransparency = 1}):Play()
+    ts_:Create(txt, fade, {TextTransparency = 1}):Play()
+    ts_:Create(bg, fade, {BackgroundTransparency = 1}):Play()
+    task.wait(0.8)
+
+    ig:Destroy()
+    main.Visible = true
+    tog.Visible = true
+end)
+
+local rp = RaycastParams.new()
+rp.FilterType = Enum.RaycastFilterType.Exclude
+
+local function bombOf(char)
+    if not char then return end
+    for _, t in pairs(char:GetChildren()) do
         if t:IsA("Tool") and t.Name:lower():find("bomb") then
             return t
+        end
+    end
+end
+
+local function holder()
+    for _, p in pairs(plrs:GetPlayers()) do
+        local c = p.Character
+        if c and bombOf(c) then
+            return p, c
         end
     end
 end
@@ -84,16 +232,58 @@ local function closest()
     return best, bd
 end
 
+local function fleePoint(root, from)
+    local away = (root.Position - from) * Vector3.new(1, 0, 1)
+    if away.Magnitude < 0.1 then
+        away = root.CFrame.LookVector
+    end
+    away = away.Unit
+    local best, bs = nil, -9e9
+    for a = -150, 150, 30 do
+        local dir = CFrame.fromAxisAngle(Vector3.new(0, 1, 0), math.rad(a)):VectorToWorldSpace(away)
+        local hit = workspace:Raycast(root.Position, dir * 14, rp)
+        local clear = hit and (hit.Position - root.Position).Magnitude or 14
+        if clear > 5 then
+            local pt = root.Position + dir * 14
+            local ground = workspace:Raycast(pt + Vector3.new(0, 3, 0), Vector3.new(0, -30, 0), rp)
+            if ground then
+                local score = dir:Dot(away) * 10 + clear * 0.3
+                if score > bs then
+                    best, bs = ground.Position, score
+                end
+            end
+        end
+    end
+    return best
+end
+
 task.spawn(function()
     while task.wait(0.1) do
-        if on then
-            local t = bomb()
-            local hum = me.Character and me.Character:FindFirstChildOfClass("Humanoid")
-            if t and hum then
-                local tgt, d = closest()
-                if tgt then
-                    hum:MoveTo(tgt.Position)
-                    if d < 6 then pcall(function() t:Activate() end) end
+        local char = me.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        if hum and root then
+            rp.FilterDescendantsInstances = {char}
+            local mine = bombOf(char)
+            if mine then
+                if walkOn then
+                    local tgt, d = closest()
+                    if tgt then
+                        hum:MoveTo(tgt.Position)
+                        if d < 6 then
+                            pcall(function() mine:Activate() end)
+                        end
+                    end
+                end
+            elseif escOn then
+                local p, c = holder()
+                local hrp = c and c:FindFirstChild("HumanoidRootPart")
+                if p and p ~= me and hrp then
+                    local d = (hrp.Position - root.Position).Magnitude
+                    if d < 50 then
+                        local pt = fleePoint(root, hrp.Position)
+                        if pt then hum:MoveTo(pt) end
+                    end
                 end
             end
         end
