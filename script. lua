@@ -4,7 +4,7 @@ local on = false
 
 local red = Color3.fromRGB(200, 50, 50)
 local green = Color3.fromRGB(50, 200, 90)
-local knifeCol = Color3.fromRGB(120, 0, 0)
+local darkRed = Color3.fromRGB(120, 0, 0)
 
 local sg = Instance.new("ScreenGui")
 sg.Name = "bombwalk"
@@ -14,8 +14,8 @@ if not pcall(function() sg.Parent = (gethui and gethui()) or game:GetService("Co
 end
 
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 200, 0, 190)
-main.Position = UDim2.new(0.5, -100, 0.1, 0)
+main.Size = UDim2.new(0, 220, 0, 285)
+main.Position = UDim2.new(0.5, -110, 0.1, 0)
 main.BackgroundColor3 = Color3.new(1, 1, 1)
 main.BorderSizePixel = 0
 main.Active = true
@@ -27,42 +27,18 @@ title.Size = UDim2.new(1, 0, 0, 24)
 title.Position = UDim2.new(0, 0, 0, 8)
 title.BackgroundTransparency = 1
 title.Text = "DSTORxTOP1"
-title.TextColor3 = knifeCol
+title.TextColor3 = darkRed
 title.Font = Enum.Font.GothamBlack
 title.TextSize = 18
 
-local w, h = 100, 82
-local rows = {
-    {57,2},{55,5},{53,8},{51,10},{49,12},{48,14,68,1},
-    {48,14,65,7},{48,31},{48,32},{48,32},{51,29},{51,28},
-    {52,26},{51,26},{51,25},{50,26},{49,27},{48,30},
-    {48,31},{47,34},{47,35},{46,36},{46,36},{45,37},
-    {45,36},{45,35},{44,35},{44,38},{43,40},{43,40},
-    {42,41},{42,40},{41,40},{40,41},{39,42},{38,44},
-    {37,46},{36,47},{34,49},{33,49},{31,51},{30,51},
-    {28,52},{26,54},{24,57},{22,59},{20,62},{18,64},
-    {16,67},{14,69},{12,56,70,14},{10,56,70,14},{8,56,71,14},{5,53,71,15},
-    {3,52,72,14},{1,52,72,15},{0,51,73,14},{0,49,73,15},{1,45,74,14},{1,43,75,14},
-    {1,41,75,14},{1,39,76,14},{1,37,76,14},{1,35,77,14},{2,32,77,14},{2,30,78,14},
-    {2,28,79,13},{2,25,79,14},{2,23,80,13},{3,20,81,13},{3,18,81,13},{3,16,82,13},
-    {3,14,83,12},{3,12,84,12},{3,10,86,10},{4,7,87,10},{4,5,89,8},{4,2,90,8},
-    {92,6},{94,5},{96,3},{99,1}
-}
-
-local pic = Instance.new("Frame", main)
-pic.Size = UDim2.new(0, 120, 0, 98)
-pic.Position = UDim2.new(0.5, -60, 0, 38)
-pic.BackgroundTransparency = 1
-
-for y, r in ipairs(rows) do
-    for i = 1, #r, 2 do
-        local f = Instance.new("Frame", pic)
-        f.BorderSizePixel = 0
-        f.BackgroundColor3 = knifeCol
-        f.Position = UDim2.new(r[i] / w, 0, (y - 1) / h, 0)
-        f.Size = UDim2.new(r[i + 1] / w, 0, 1 / h, 1)
-    end
-end
+local pic = Instance.new("ImageLabel", main)
+pic.Size = UDim2.new(0, 190, 0, 190)
+pic.Position = UDim2.new(0.5, -95, 0, 38)
+pic.BackgroundColor3 = Color3.new(0, 0, 0)
+pic.BorderSizePixel = 0
+pic.Image = "rbxassetid://131920968752633"
+pic.ScaleType = Enum.ScaleType.Crop
+Instance.new("UICorner", pic).CornerRadius = UDim.new(0, 10)
 
 local b = Instance.new("TextButton", main)
 b.Size = UDim2.new(1, -24, 0, 34)
