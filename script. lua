@@ -1,253 +1,125 @@
--- Services
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local VirtualUser = game:GetService("VirtualUser")
+local plrs = game:GetService("Players")
+local me = plrs.LocalPlayer
+local on = false
 
-local player = Players.LocalPlayer
+local red = Color3.fromRGB(200, 50, 50)
+local green = Color3.fromRGB(50, 200, 90)
+local knifeCol = Color3.fromRGB(120, 0, 0)
 
--- Create Main GUI
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "AFK_Slider_Hub"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("PlayerGui")
-
--- Main Frame (النافذة الرئيسية)
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 320, 0, 420)
-mainFrame.Position = UDim2.new(0.5, -160, 0.5, -210)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-mainFrame.BorderSizePixel = 0
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = screenGui
-
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 14)
-corner.Parent = mainFrame
-
--- Title (العنوان المطلوب)
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 50)
-title.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
-title.Text = "سلايدر للصملات 🚀"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.TextSize = 20
-title.Font = Enum.Font.GothamBold
-title.Parent = mainFrame
-
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 14)
-titleCorner.Parent = title
-
--- ==========================================
--- SECTION 1: SLIDER FOR SPEED (سلايدر السرعة)
--- ==========================================
-
-local sliderLabel = Instance.new("TextLabel")
-sliderLabel.Size = UDim2.new(0.9, 0, 0, 25)
-sliderLabel.Position = UDim2.new(0.05, 0, 0.15, 0)
-sliderLabel.BackgroundTransparency = 1
-sliderLabel.Text = "سرعة الصملة (WalkSpeed): 16"
-sliderLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-sliderLabel.TextSize = 14
-sliderLabel.Font = Enum.Font.GothamMedium
-sliderLabel.Parent = mainFrame
-
-local sliderBg = Instance.new("Frame")
-sliderBg.Size = UDim2.new(0.9, 0, 0, 14)
-sliderBg.Position = UDim2.new(0.05, 0, 0.22, 0)
-sliderBg.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
-sliderBg.Parent = mainFrame
-
-local sliderBgCorner = Instance.new("UICorner")
-sliderBgCorner.CornerRadius = UDim.new(1, 0)
-sliderBgCorner.Parent = sliderBg
-
-local sliderFill = Instance.new("Frame")
-sliderFill.Size = UDim2.new(0, 0, 1, 0)
-sliderFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-sliderFill.Parent = sliderBg
-
-local sliderFillCorner = Instance.new("UICorner")
-sliderFillCorner.CornerRadius = UDim.new(1, 0)
-sliderFillCorner.Parent = sliderFill
-
--- Slider Logic
-local isDragging = false
-local minSpeed = 16
-local maxSpeed = 250
-
-local function updateSpeed(input)
-	local pos = math.clamp((input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
-	sliderFill.Size = UDim2.new(pos, 0, 1, 0)
-	
-	local calculatedSpeed = math.floor(minSpeed + (maxSpeed - minSpeed) * pos)
-	sliderLabel.Text = "سرعة الصملة (WalkSpeed): " .. tostring(calculatedSpeed)
-	
-	if player.Character and player.Character:FindFirstChild("Humanoid") then
-		player.Character.Humanoid.WalkSpeed = calculatedSpeed
-	end
+local sg = Instance.new("ScreenGui")
+sg.Name = "bombwalk"
+sg.ResetOnSpawn = false
+if not pcall(function() sg.Parent = (gethui and gethui()) or game:GetService("CoreGui") end) or not sg.Parent then
+    sg.Parent = me:WaitForChild("PlayerGui")
 end
 
--- Re-apply speed on respawn
-player.CharacterAdded:Connect(function(char)
-	local hum = char:WaitForChild("Humanoid")
-	local currentPos = sliderFill.Size.X.Scale
-	hum.WalkSpeed = math.floor(minSpeed + (maxSpeed - minSpeed) * currentPos)
+local main = Instance.new("Frame", sg)
+main.Size = UDim2.new(0, 200, 0, 190)
+main.Position = UDim2.new(0.5, -100, 0.1, 0)
+main.BackgroundColor3 = Color3.new(1, 1, 1)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
+
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, 0, 0, 24)
+title.Position = UDim2.new(0, 0, 0, 8)
+title.BackgroundTransparency = 1
+title.Text = "DSTORxTOP1"
+title.TextColor3 = knifeCol
+title.Font = Enum.Font.GothamBlack
+title.TextSize = 18
+
+local w, h = 100, 82
+local rows = {
+    {57,2},{55,5},{53,8},{51,10},{49,12},{48,14,68,1},
+    {48,14,65,7},{48,31},{48,32},{48,32},{51,29},{51,28},
+    {52,26},{51,26},{51,25},{50,26},{49,27},{48,30},
+    {48,31},{47,34},{47,35},{46,36},{46,36},{45,37},
+    {45,36},{45,35},{44,35},{44,38},{43,40},{43,40},
+    {42,41},{42,40},{41,40},{40,41},{39,42},{38,44},
+    {37,46},{36,47},{34,49},{33,49},{31,51},{30,51},
+    {28,52},{26,54},{24,57},{22,59},{20,62},{18,64},
+    {16,67},{14,69},{12,56,70,14},{10,56,70,14},{8,56,71,14},{5,53,71,15},
+    {3,52,72,14},{1,52,72,15},{0,51,73,14},{0,49,73,15},{1,45,74,14},{1,43,75,14},
+    {1,41,75,14},{1,39,76,14},{1,37,76,14},{1,35,77,14},{2,32,77,14},{2,30,78,14},
+    {2,28,79,13},{2,25,79,14},{2,23,80,13},{3,20,81,13},{3,18,81,13},{3,16,82,13},
+    {3,14,83,12},{3,12,84,12},{3,10,86,10},{4,7,87,10},{4,5,89,8},{4,2,90,8},
+    {92,6},{94,5},{96,3},{99,1}
+}
+
+local pic = Instance.new("Frame", main)
+pic.Size = UDim2.new(0, 120, 0, 98)
+pic.Position = UDim2.new(0.5, -60, 0, 38)
+pic.BackgroundTransparency = 1
+
+for y, r in ipairs(rows) do
+    for i = 1, #r, 2 do
+        local f = Instance.new("Frame", pic)
+        f.BorderSizePixel = 0
+        f.BackgroundColor3 = knifeCol
+        f.Position = UDim2.new(r[i] / w, 0, (y - 1) / h, 0)
+        f.Size = UDim2.new(r[i + 1] / w, 0, 1 / h, 1)
+    end
+end
+
+local b = Instance.new("TextButton", main)
+b.Size = UDim2.new(1, -24, 0, 34)
+b.Position = UDim2.new(0, 12, 1, -46)
+b.BackgroundColor3 = red
+b.BorderSizePixel = 0
+b.TextColor3 = Color3.new(1, 1, 1)
+b.Font = Enum.Font.GothamBold
+b.TextSize = 16
+b.Text = "Walk: OFF"
+Instance.new("UICorner", b).CornerRadius = UDim.new(0, 10)
+
+b.MouseButton1Click:Connect(function()
+    on = not on
+    b.Text = on and "Walk: ON" or "Walk: OFF"
+    b.BackgroundColor3 = on and green or red
 end)
 
-sliderBg.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		isDragging = true
-		updateSpeed(input)
-	end
-end)
+local function bomb()
+    local c = me.Character
+    if not c then return end
+    for _, t in pairs(c:GetChildren()) do
+        if t:IsA("Tool") and t.Name:lower():find("bomb") then
+            return t
+        end
+    end
+end
 
-UserInputService.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		isDragging = false
-	end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-	if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-		updateSpeed(input)
-	end
-end)
-
--- ==========================================
--- SECTION 2: AFK SCRIPTS (خيارات الـ AFK)
--- ==========================================
-
-local afkTitle = Instance.new("TextLabel")
-afkTitle.Size = UDim2.new(0.9, 0, 0, 25)
-afkTitle.Position = UDim2.new(0.05, 0, 0.30, 0)
-afkTitle.BackgroundTransparency = 1
-afkTitle.Text = "⚡ أدوات الصملة والـ AFK:"
-afkTitle.TextColor3 = Color3.fromRGB(255, 200, 0)
-afkTitle.TextSize = 15
-afkTitle.Font = Enum.Font.GothamBold
-afkTitle.TextXAlignment = Enum.TextXAlignment.Right
-afkTitle.Parent = mainFrame
-
--- 1. Anti-AFK Kick
-local antiAfkBtn = Instance.new("TextButton")
-antiAfkBtn.Size = UDim2.new(0.9, 0, 0, 38)
-antiAfkBtn.Position = UDim2.new(0.05, 0, 0.38, 0)
-antiAfkBtn.BackgroundColor3 = Color3.fromRGB(160, 40, 40)
-antiAfkBtn.Text = "حماية من الطرد (Anti-Kick): معطل ❌"
-antiAfkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-antiAfkBtn.Font = Enum.Font.GothamMedium
-antiAfkBtn.TextSize = 13
-antiAfkBtn.Parent = mainFrame
-
-local antiAfkCorner = Instance.new("UICorner")
-antiAfkCorner.CornerRadius = UDim.new(0, 8)
-antiAfkCorner.Parent = antiAfkBtn
-
-local antiAfkEnabled = false
-player.Idled:Connect(function()
-	if antiAfkEnabled then
-		VirtualUser:CaptureController()
-		VirtualUser:ClickButton2(Vector2.new())
-	end
-end)
-
-antiAfkBtn.MouseButton1Click:Connect(function()
-	antiAfkEnabled = not antiAfkEnabled
-	if antiAfkEnabled then
-		antiAfkBtn.Text = "حماية من الطرد (Anti-Kick): مفعل ✅"
-		antiAfkBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
-	else
-		antiAfkBtn.Text = "حماية من الطرد (Anti-Kick): معطل ❌"
-		antiAfkBtn.BackgroundColor3 = Color3.fromRGB(160, 40, 40)
-	end
-end)
-
--- 2. AFK Timer Label
-local timerLabel = Instance.new("TextLabel")
-timerLabel.Size = UDim2.new(0.9, 0, 0, 38)
-timerLabel.Position = UDim2.new(0.05, 0, 0.50, 0)
-timerLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
-timerLabel.Text = "وقت الـ AFK: 00:00:00"
-timerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-timerLabel.Font = Enum.Font.GothamMedium
-timerLabel.TextSize = 13
-timerLabel.Parent = mainFrame
-
-local timerCorner = Instance.new("UICorner")
-timerCorner.CornerRadius = UDim.new(0, 8)
-timerCorner.Parent = timerLabel
-
-local secondsAFK = 0
-task.spawn(function()
-	while true do
-		task.wait(1)
-		secondsAFK = secondsAFK + 1
-		local hrs = math.floor(secondsAFK / 3600)
-		local mins = math.floor((secondsAFK % 3600) / 60)
-		local secs = secondsAFK % 60
-		timerLabel.Text = string.format("وقت الـ AFK: %02d:%02d:%02d", hrs, mins, secs)
-	end
-end)
-
--- 3. Auto Jump AFK
-local autoJumpBtn = Instance.new("TextButton")
-autoJumpBtn.Size = UDim2.new(0.9, 0, 0, 38)
-autoJumpBtn.Position = UDim2.new(0.05, 0, 0.62, 0)
-autoJumpBtn.BackgroundColor3 = Color3.fromRGB(160, 40, 40)
-autoJumpBtn.Text = "قفز تلقائي (Auto Jump): معطل ❌"
-autoJumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoJumpBtn.Font = Enum.Font.GothamMedium
-autoJumpBtn.TextSize = 13
-autoJumpBtn.Parent = mainFrame
-
-local autoJumpCorner = Instance.new("UICorner")
-autoJumpCorner.CornerRadius = UDim.new(0, 8)
-autoJumpCorner.Parent = autoJumpBtn
-
-local autoJumpEnabled = false
-autoJumpBtn.MouseButton1Click:Connect(function()
-	autoJumpEnabled = not autoJumpEnabled
-	if autoJumpEnabled then
-		autoJumpBtn.Text = "قفز تلقائي (Auto Jump): مفعل ✅"
-		autoJumpBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
-	else
-		autoJumpBtn.Text = "قفز تلقائي (Auto Jump): معطل ❌"
-		autoJumpBtn.BackgroundColor3 = Color3.fromRGB(160, 40, 40)
-	end
-end)
+local function closest()
+    local c = me.Character
+    local r = c and c:FindFirstChild("HumanoidRootPart")
+    if not r then return end
+    local best, bd = nil, 9e9
+    for _, p in pairs(plrs:GetPlayers()) do
+        local pc = p ~= me and p.Character
+        local hr = pc and pc:FindFirstChild("HumanoidRootPart")
+        local hm = pc and pc:FindFirstChildOfClass("Humanoid")
+        if hr and hm and hm.Health > 0 then
+            local d = (hr.Position - r.Position).Magnitude
+            if d < bd then best, bd = hr, d end
+        end
+    end
+    return best, bd
+end
 
 task.spawn(function()
-	while true do
-		task.wait(2.5)
-		if autoJumpEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
-			player.Character.Humanoid.Jump = true
-		end
-	end
-end)
-
--- ==========================================
--- SECTION 3: TOGGLE BUTTON (زر إخفاء/إظهار)
--- ==========================================
-
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Name = "ToggleUI"
-toggleBtn.Size = UDim2.new(0, 100, 0, 35)
-toggleBtn.Position = UDim2.new(0.02, 0, 0.1, 0)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
-toggleBtn.Text = "🚀 سلايدر"
-toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleBtn.Font = Enum.Font.GothamBold
-toggleBtn.TextSize = 12
-toggleBtn.Parent = screenGui
-
-local toggleCorner = Instance.new("UICorner")
-toggleCorner.CornerRadius = UDim.new(0, 8)
-toggleCorner.Parent = toggleBtn
-
-toggleBtn.MouseButton1Click:Connect(function()
-	mainFrame.Visible = not mainFrame.Visible
+    while task.wait(0.1) do
+        if on then
+            local t = bomb()
+            local hum = me.Character and me.Character:FindFirstChildOfClass("Humanoid")
+            if t and hum then
+                local tgt, d = closest()
+                if tgt then
+                    hum:MoveTo(tgt.Position)
+                    if d < 6 then pcall(function() t:Activate() end) end
+                end
+            end
+        end
+    end
 end)
