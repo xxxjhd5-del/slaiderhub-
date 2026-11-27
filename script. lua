@@ -2,6 +2,7 @@ local plrs = game:GetService("Players")
 local ts_ = game:GetService("TweenService")
 local sound_ = game:GetService("SoundService")
 local debris_ = game:GetService("Debris")
+local content_ = game:GetService("ContentProvider")
 local me = plrs.LocalPlayer
 local walkOn = false
 local escOn = false
@@ -34,7 +35,7 @@ local sg = newGui("bombwalk")
 local function setImage(label, id)
     label.Image = "rbxthumb://type=Asset&id=" .. id .. "&w=420&h=420"
     task.spawn(function()
-        task.wait(4)
+        task.wait(2.5)
         if not label.IsLoaded then
             label.Image = "rbxassetid://" .. id
         end
@@ -61,7 +62,6 @@ main.BackgroundColor3 = Color3.new(0, 0, 0)
 main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
-main.Visible = false
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 
 local pic = Instance.new("ImageLabel", main)
@@ -126,7 +126,6 @@ tog.Active = true
 tog.Draggable = true
 tog.ScaleType = Enum.ScaleType.Stretch
 tog.ZIndex = 5
-tog.Visible = false
 Instance.new("UICorner", tog).CornerRadius = UDim.new(0, 14)
 local tstroke = Instance.new("UIStroke", tog)
 tstroke.Color = Color3.fromRGB(200, 30, 30)
@@ -145,8 +144,13 @@ tog.MouseButton1Click:Connect(function()
 end)
 
 task.spawn(function()
+    pcall(function() content_:PreloadAsync({pic, tog}) end)
+end)
+
+task.spawn(function()
     local ig = newGui("bombwalk_intro")
     ig.IgnoreGuiInset = true
+    ig.DisplayOrder = 999
 
     local bg = Instance.new("Frame", ig)
     bg.Size = UDim2.new(1, 0, 1, 0)
@@ -181,7 +185,12 @@ task.spawn(function()
         end
         task.wait(0.13)
     end
-    task.wait(1.2)
+    task.wait(0.8)
+
+    local t0 = tick()
+    while (not pic.IsLoaded or not tog.IsLoaded) and tick() - t0 < 8 do
+        task.wait(0.1)
+    end
 
     local fade = TweenInfo.new(0.7)
     ts_:Create(img, fade, {ImageTransparency = 1}):Play()
@@ -190,8 +199,6 @@ task.spawn(function()
     task.wait(0.8)
 
     ig:Destroy()
-    main.Visible = true
-    tog.Visible = true
 end)
 
 local rp = RaycastParams.new()
