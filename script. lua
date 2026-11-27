@@ -12,6 +12,7 @@ local TOGGLE_ID = "117454871157451"
 local INTRO_ID = MAIN_ID
 local INTRO_TEXT = "DSTORxTOP1"
 local CLICK_ID = "0"
+local ESC_DIST = 70
 
 local IMG_W, IMG_H = 736, 756
 local W = 300
@@ -85,6 +86,19 @@ title.ZIndex = 2
 local ts = Instance.new("UIStroke", title)
 ts.Color = Color3.new(0, 0, 0)
 ts.Thickness = 2
+
+local status = Instance.new("TextLabel", main)
+status.Size = UDim2.new(1, 0, 0, 20)
+status.Position = UDim2.new(0, 0, 1, -72)
+status.BackgroundTransparency = 1
+status.Text = "Bomb: none"
+status.TextColor3 = Color3.new(1, 1, 1)
+status.Font = Enum.Font.GothamBold
+status.TextSize = 14
+status.ZIndex = 2
+local ss = Instance.new("UIStroke", status)
+ss.Color = Color3.new(0, 0, 0)
+ss.Thickness = 1.5
 
 local function makeBtn(text, xScale, xOff)
     local b = Instance.new("TextButton", main)
@@ -213,10 +227,37 @@ local function bombOf(char)
     end
 end
 
+local function broad(char, plr)
+    for _, v in ipairs(char:GetDescendants()) do
+        if v.Name:lower():find("bomb") then
+            return true
+        end
+    end
+    for k, v in pairs(char:GetAttributes()) do
+        if tostring(k):lower():find("bomb") and v then
+            return true
+        end
+    end
+    if plr then
+        for k, v in pairs(plr:GetAttributes()) do
+            if tostring(k):lower():find("bomb") and v then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 local function holder()
     for _, p in pairs(plrs:GetPlayers()) do
         local c = p.Character
         if c and bombOf(c) then
+            return p, c
+        end
+    end
+    for _, p in pairs(plrs:GetPlayers()) do
+        local c = p.Character
+        if c and broad(c, p) then
             return p, c
         end
     end
@@ -271,25 +312,38 @@ task.spawn(function()
         local root = char and char:FindFirstChild("HumanoidRootPart")
         if hum and root then
             rp.FilterDescendantsInstances = {char}
-            local mine = bombOf(char)
-            if mine then
+            local hp, hc = holder()
+            if hp then
+                status.Text = "Bomb: " .. (hp == me and "YOU" or hp.DisplayName)
+            else
+                status.Text = "Bomb: none"
+            end
+
+            if hp == me then
                 if walkOn then
                     local tgt, d = closest()
                     if tgt then
                         hum:MoveTo(tgt.Position)
-                        if d < 6 then
-                            pcall(function() mine:Activate() end)
+                        local tool = bombOf(char)
+                        if tool and d < 6 then
+                            pcall(function() tool:Activate() end)
                         end
                     end
                 end
-            elseif escOn then
-                local p, c = holder()
-                local hrp = c and c:FindFirstChild("HumanoidRootPart")
-                if p and p ~= me and hrp then
+            elseif escOn and hp and hc then
+                local hrp = hc:FindFirstChild("HumanoidRootPart")
+                if hrp then
                     local d = (hrp.Position - root.Position).Magnitude
-                    if d < 50 then
+                    if d < ESC_DIST then
                         local pt = fleePoint(root, hrp.Position)
-                        if pt then hum:MoveTo(pt) end
+                        if not pt then
+                            local away = (root.Position - hrp.Position) * Vector3.new(1, 0, 1)
+                            if away.Magnitude < 0.1 then
+                                away = root.CFrame.LookVector
+                            end
+                            pt = root.Position + away.Unit * 14
+                        end
+                        hum:MoveTo(pt)
                     end
                 end
             end
